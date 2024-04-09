@@ -1,0 +1,31 @@
+{
+  "name": "@gkim67/qaing-schema",
+  "version": "0.0.1",
+  "description": "",
+  "type": "commonjs",
+  "author": "Geon Kim",
+  "license": "UNLICENSED",
+  "private": false,
+  "main": "lib/index.js",
+  "homepage": "https://qaing.co",
+  "publishConfig": {
+    "@devcamp-teamsparta:registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "build": "tsc",
+    "format": "prettier --write src"
+  },
+  "keywords": [
+    "qaing"
+  ],
+  "files": [
+    "lib"
+  ],
+  "dependencies": {
+    "nestjs-zod": "^3.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.4"
+  }
+}

@@ -1,0 +1,85 @@
+name: Publish Package
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          registry-url: https://npm.pkg.github.com/
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Get previous tag-version
+        id: previous_tag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+        with:
+          fallback: 1.0.0
+
+      - name: Get next minor tag-version
+        id: minor_tag
+        uses: WyriHaximus/github-action-next-semvers@v1
+        with:
+          version: ${{ steps.previous_tag.outputs.tag }}
+
+      - name: Get current time
+        uses: josStorer/get-current-time@v2.0.2
+        id: date
+        with:
+          format: YYYY-MM-DD
+          utcOffset: '+09:00'
+
+      - name: Set version
+        run: npm version ${{ steps.minor_tag.outputs.v_patch }}  --no-git-tag-version
+
+      - name: Build
+        run: pnpm build
+
+      - name: Publish
+        run: npm publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.minor_tag.outputs.v_patch }}
+          release_name: ${{ steps.minor_tag.outputs.v_patch }}
+          body: |
+            ${{ steps.date.outputs.formattedTime }}
+            Github action released ${{ steps.minor_tag.outputs.v_patch }}
+          draft: false
+          prerelease: false
