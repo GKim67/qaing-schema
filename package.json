@@ -9,7 +9,7 @@
   "main": "lib/index.js",
   "homepage": "https://qaing.co",
   "publishConfig": {
-    "@devcamp-teamsparta:registry": "https://npm.pkg.github.com"
+    "@gkim67:registry": "https://npm.pkg.github.com"
   },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
